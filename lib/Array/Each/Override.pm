@@ -6,6 +6,7 @@ use warnings;
 our $VERSION = '0.01';
 
 use Scalar::Util qw<reftype weaken>;
+use Carp qw<croak>;
 
 # XXX: this hash gets too big if you don't exhaust your iterators, but is
 # enough for a proof-of-concept.  The real implementation should use a piece of
@@ -16,10 +17,11 @@ my %ITERATOR_FOR;
 
 *CORE::GLOBAL::each = sub (\[@%]) {
     my ($arg) = @_;
-    if (reftype $arg eq 'HASH') {
+    my $type = reftype $arg;
+    if ($type eq 'HASH') {
         return CORE::each %$arg;
     }
-    else {
+    elsif ($type eq 'ARRAY') {
         my $iterator = $ITERATOR_FOR{$arg} ||= do {
             my $it = [0, $arg];
             weaken $it->[1];
@@ -32,6 +34,39 @@ my %ITERATOR_FOR;
         }
         my $curr = $iterator->[0]++;
         return wantarray ? ($curr, $arg->[$curr]) : $curr;
+    }
+    else {
+        croak "Type of argument to each must be hash or array (not $type)";
+    }
+};
+
+*CORE::GLOBAL::keys = sub (\[@%]) {
+    my ($arg) = @_;
+    my $type = reftype $arg;
+    if ($type eq 'HASH') {
+        return CORE::keys %$arg;
+    }
+    elsif ($type eq 'ARRAY') {
+        delete $ITERATOR_FOR{$arg};
+        return wantarray ? (0 .. $#$arg) : @$arg;
+    }
+    else {
+        croak "Type of argument to keys must be hash or array (not $type)";
+    }
+};
+
+*CORE::GLOBAL::values = sub (\[@%]) {
+    my ($arg) = @_;
+    my $type = reftype $arg;
+    if ($type eq 'HASH') {
+        return CORE::keys %$arg;
+    }
+    elsif ($type eq 'ARRAY') {
+        delete $ITERATOR_FOR{$arg};
+        return @$arg;
+    }
+    else {
+        croak "Type of argument to values must be hash or array (not $type)";
     }
 };
 
