@@ -1,4 +1,5 @@
 lib/Array/Each/Override.pm
+Override.xs
 Changes
 MANIFEST
 Makefile.PL

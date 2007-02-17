@@ -4,16 +4,12 @@ use strict;
 use warnings;
 
 our $VERSION = '0.01';
+use base qw<DynaLoader>;
 
-use Scalar::Util qw<reftype weaken>;
+use Scalar::Util qw<reftype>;
 use Carp qw<croak>;
 
-# XXX: this hash gets too big if you don't exhaust your iterators, but is
-# enough for a proof-of-concept.  The real implementation should use a piece of
-# magic on the iterated array, so that the iterator data gets automatically
-# thrown away when the array is collected.  That also avoids weak references,
-# which can't be as efficient as normal references.
-my %ITERATOR_FOR;
+__PACKAGE__->bootstrap($VERSION);
 
 *CORE::GLOBAL::each = sub (\[@%]) {
     my ($arg) = @_;
@@ -22,18 +18,12 @@ my %ITERATOR_FOR;
         return CORE::each %$arg;
     }
     elsif ($type eq 'ARRAY') {
-        my $iterator = $ITERATOR_FOR{$arg} ||= do {
-            my $it = [0, $arg];
-            weaken $it->[1];
-            $it;
-        };
-        my ($next, $ref) = @$iterator;
-        if (!$ref || $next >= @$ref) {
-            delete $ITERATOR_FOR{$arg};
+        my $index = _advance_iterator($arg);
+        if ($index >= @$arg) {
+            _clear_iterator($arg);
             return;
         }
-        my $curr = $iterator->[0]++;
-        return wantarray ? ($curr, $arg->[$curr]) : $curr;
+        return wantarray ? ($index, $arg->[$index]) : $index;
     }
     else {
         croak "Type of argument to each must be hash or array (not $type)";
@@ -47,7 +37,7 @@ my %ITERATOR_FOR;
         return CORE::keys %$arg;
     }
     elsif ($type eq 'ARRAY') {
-        delete $ITERATOR_FOR{$arg};
+        _clear_iterator($arg);
         return wantarray ? (0 .. $#$arg) : @$arg;
     }
     else {
@@ -62,7 +52,7 @@ my %ITERATOR_FOR;
         return CORE::values %$arg;
     }
     elsif ($type eq 'ARRAY') {
-        delete $ITERATOR_FOR{$arg};
+        _clear_iterator($arg);
         return @$arg;
     }
     else {
