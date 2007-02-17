@@ -2,7 +2,7 @@
 #include "perl.h"
 #include "XSUB.h"
 
-#define MAGIC_IDENTIFIER "\xA1\x7E\x6A\x70" /* XXX: must be 4 bytes */
+static char private_data = '\0';
 
 static MAGIC *
 get_existing_magic(SV *sv)
@@ -10,7 +10,7 @@ get_existing_magic(SV *sv)
     MAGIC *mg;
 
     for (mg = mg_find(sv, PERL_MAGIC_ext);  mg;  mg = mg->mg_moremagic)
-        if (mg->mg_ptr && strnEQ(mg->mg_ptr, MAGIC_IDENTIFIER, 4))
+        if (mg->mg_ptr == &private_data)
             return mg;
 
     return 0;
@@ -26,7 +26,7 @@ get_magic(SV *sv)
         return mg;
 
     /* didn't find any iterator magic, so create some */
-    return sv_magicext(sv, newSViv(0), PERL_MAGIC_ext, 0, MAGIC_IDENTIFIER, 0);
+    return sv_magicext(sv, newSViv(0), PERL_MAGIC_ext, 0, &private_data, 0);
 }
 
 MODULE = Array::Each::Override      PACKAGE = Array::Each::Override
