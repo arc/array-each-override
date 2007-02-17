@@ -59,7 +59,7 @@ my %ITERATOR_FOR;
     my ($arg) = @_;
     my $type = reftype $arg;
     if ($type eq 'HASH') {
-        return CORE::keys %$arg;
+        return CORE::values %$arg;
     }
     elsif ($type eq 'ARRAY') {
         delete $ITERATOR_FOR{$arg};
