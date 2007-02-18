@@ -10,8 +10,7 @@ use Scalar::Util qw<reftype>;
 use Carp qw<croak>;
 
 my @FUNCTIONS = qw<each keys values>;
-my %SIMPLE_FUNCTION = map { $_ => 1 } @FUNCTIONS;
-my  %KNOWN_FUNCTION = map { ($_ => 1, "array_$_" => 1) } @FUNCTIONS;
+my %KNOWN_FUNCTION = map { ($_ => 1, "array_$_" => 1) } @FUNCTIONS;
 
 __PACKAGE__->bootstrap($VERSION);
 
@@ -38,50 +37,35 @@ sub unimport {
 sub _parse_import_list {
     my ($importer, @imports) = @_;
 
-    my %imports;
-    my $target = 'local';
-    my @pending;
-
-    for my $arg (@imports) {
-        if ($arg eq ':local' || $arg eq ':global') {
-            if (@pending) {
-                push @{ $imports{ $target || 'local' } }, @pending;
-                ($target, @pending) = ();
-            }
-            ($target = $arg) =~ s/\A ://xms;
-        }
-        elsif ($KNOWN_FUNCTION{$arg}) {
-            croak "Impossible to use a :global version of $arg"
-                if !$SIMPLE_FUNCTION{$arg};
-            push @pending, $arg;
-        }
-        else {
-            croak "Invalid argument '$arg' in import list; should be ",
-                ":local, :global, or the name of an exported function";
-        }
+    for my $name (@imports) {
+        croak "Unknown function '$name'"
+            if !$KNOWN_FUNCTION{$name}
+            && $name ne ':global'
+            && $name ne ':safe';
     }
 
-    if ($target) {
-        @pending = @FUNCTIONS
-            if !@pending;
-        push @{ $imports{$target} }, @pending;
-    }
+    my $mode = '';
+    $mode = shift @imports
+        if @imports && $imports[0] =~ /\A :/xms;
 
-    for my $how (keys %imports) {
-        my $dest = $how eq 'local' ? $importer : 'CORE::GLOBAL';
-        my %seen;
-        for my $name (@{ $imports{$how} }) {
-            next if $seen{$name}++;
-            my $local_name = $SIMPLE_FUNCTION{$name} ? "array_$name" : $name;
-            push @imports, {
-                dest => $dest,
-                name => $name,
-                func => do { no strict 'refs'; \&$local_name },
-            };
-        }
-    }
+    croak ":global or :safe must be the first item in the import list"
+        if grep { /^:/ } @imports;
 
-    return @imports;
+    @imports = @FUNCTIONS if !@imports;
+
+    $importer = 'CORE::GLOBAL'
+        if $mode eq ':global';
+
+    return map {
+        (my $func_name = $_) =~ s/\A (?!array_)/array_/xms;
+        $_ = $func_name if $mode eq ':safe';
+        my $func = do { no strict 'refs'; \&$func_name };
+        +{
+            dest => $importer,
+            func => $func,
+            name => $_,
+        };
+    } @imports;
 }
 
 sub array_each (\[@%]) {
@@ -116,7 +100,7 @@ sub array_keys (\[@%]) {
     else {
         croak "Type of argument to keys must be hash or array (not $type)";
     }
-};
+}
 
 sub array_values (\[@%]) {
     my ($arg) = @_;
@@ -202,6 +186,14 @@ noninvasive names:
 
     use Array::Each::Override qw<array_each array_keys array_values>;
 
+Or to import all of them in one go:
+
+    use Array::Each::Override qw<:safe>;
+
+Or mix and match:
+
+    use Array::Each::Override qw<each array_keys array_values>;
+
 The functions with these noninvasive names behave exactly the same as the
 overridden core functions.
 
@@ -210,14 +202,12 @@ of your program in one fell swoop:
 
     use Array::Each::Override qw<:global>;
 
-You can even combine these.  Any of the following calls will make C<each>
-available globally, C<keys> available in just the current package, and
-C<values> available in the current package under the name C<array_values>:
+Or make just some of the functions global:
 
-    use Array::Each::Override qw<keys array_values :global each>;
-    use Array::Each::Override qw<:global each :local array_values keys>;
+    use Array::Each::Override qw<:global each keys>;
 
-You can also unimport names:
+You can also unimport names.  For example, this removes the globally overridden
+functions:
 
     no Array::Each::Override qw<:global>;
 

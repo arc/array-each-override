@@ -7,5 +7,6 @@ README
 t/01_load.t
 t/02_basic.t
 t/03_reset.t
+t/04_import.t
 t/98_pod.t
 t/99_pod_coverage.t
