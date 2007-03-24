@@ -68,55 +68,6 @@ sub _parse_import_list {
     } @imports;
 }
 
-sub array_each (\[@%]) {
-    my ($arg) = @_;
-    my $type = reftype $arg;
-    if ($type eq 'HASH') {
-        return CORE::each %$arg;
-    }
-    elsif ($type eq 'ARRAY') {
-        my $index = _advance_iterator($arg);
-        if ($index >= @$arg) {
-            _clear_iterator($arg);
-            return;
-        }
-        return wantarray ? ($index, $arg->[$index]) : $index;
-    }
-    else {
-        croak "Type of argument to each must be hash or array (not $type)";
-    }
-}
-
-sub array_keys (\[@%]) {
-    my ($arg) = @_;
-    my $type = reftype $arg;
-    if ($type eq 'HASH') {
-        return CORE::keys %$arg;
-    }
-    elsif ($type eq 'ARRAY') {
-        _clear_iterator($arg);
-        return wantarray ? (0 .. $#$arg) : @$arg;
-    }
-    else {
-        croak "Type of argument to keys must be hash or array (not $type)";
-    }
-}
-
-sub array_values (\[@%]) {
-    my ($arg) = @_;
-    my $type = reftype $arg;
-    if ($type eq 'HASH') {
-        return CORE::values %$arg;
-    }
-    elsif ($type eq 'ARRAY') {
-        _clear_iterator($arg);
-        return @$arg;
-    }
-    else {
-        croak "Type of argument to values must be hash or array (not $type)";
-    }
-}
-
 1;
 
 =head1 NAME
