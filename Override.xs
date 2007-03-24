@@ -28,7 +28,7 @@ get_magic(pTHX_ SV *sv)
         return mg;
 
     /* didn't find any iterator magic, so create some */
-    return sv_magicext(sv, newSViv(0), PERL_MAGIC_ext, 0, &private_data, 0);
+    return sv_magicext(sv, sv_2mortal(newSViv(0)), PERL_MAGIC_ext, 0, &private_data, 0);
 }
 
 static int
@@ -108,9 +108,13 @@ PPCODE:
         clear_iterator(aTHX_ sv);
         XSRETURN_EMPTY;
     }
-    EXTEND(SP, 2);
-    PUSHs(sv_2mortal(newSViv(i)));
-    PUSHs(*Perl_av_fetch(aTHX_ av, i, 0));
+    if (GIMME_V != G_VOID) {
+        EXTEND(SP, 2);
+        PUSHs(sv_2mortal(newSViv(i)));
+        PUSHs(*Perl_av_fetch(aTHX_ av, i, 0));
+        XSRETURN(2);
+    }
+    XSRETURN_EMPTY;
 
 void
 array_keys(sv)
