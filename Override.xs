@@ -80,14 +80,16 @@ PPCODE:
             EXTEND(SP, 2);
             SV *const key_sv = hv_iterkeysv(entry);
             PUSHs(key_sv);
-            if (gimme == G_ARRAY) {
+            if (gimme != G_ARRAY)
+               XSRETURN(1);
+            else {
                 SV *val;
                 /* PUTBACK; */
                 val = hv_iterval(hv, entry);
                 /* SPAGAIN; */
                 PUSHs(val);
+                XSRETURN(2);
             }
-            XSRETURN(2);
         }
         else if (gimme == G_SCALAR) {
             XSRETURN_UNDEF;
