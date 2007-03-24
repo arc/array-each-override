@@ -78,7 +78,7 @@ PPCODE:
 
         if (entry) {
             EXTEND(SP, 2);
-            SV *const key_sv = SvREFCNT_inc(hv_iterkeysv(entry));
+            SV *const key_sv = hv_iterkeysv(entry);
             PUSHs(key_sv);
             if (gimme == G_ARRAY) {
                 SV *val;
@@ -152,7 +152,7 @@ PPCODE:
             while ((entry = hv_iternext(hv))) {
                 SV *key_sv;
                 /* SPAGAIN; */
-                key_sv = SvREFCNT_inc(hv_iterkeysv(entry));
+                key_sv = hv_iterkeysv(entry);
                 PUSHs(key_sv);
                 /* PUTBACK; */
             }
