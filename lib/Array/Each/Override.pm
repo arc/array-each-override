@@ -164,20 +164,71 @@ functions:
 
 =head1 BUGS
 
+=over 4
+
+=item *
+
 If you set C<$[> to anything other than 0, then (a) please stop doing that,
 because it's been deprecated for a long time, and (b) C<each>, C<keys>, and
 C<values> on arrays probably don't do what you expect.
 
+=item *
+
 Importing and unimporting function names has an effect on your entire package,
 not just your lexical scope.
 
+=item *
+
+There may be some outstanding memory leaks.
+
+=item *
+
+Tied arrays haven't been tested at all.
+
+=back
+
+=head1 PERFORMANCE
+
+There is some overhead for calling the new functions on a hash, compared to
+the standard core functions.  The approximate penalties in each case are as
+follows:
+
+=over 4
+
+=item C<each %hash>
+
+20-25%
+
+=item scalar-context C<keys %hash>
+
+55-60%
+
+=item scalar-context C<values %hash>
+
+60-65%
+
+=item list-context C<keys %hash>
+
+1%
+
+=item list-context C<values %hash>
+
+1%
+
+=back
+
+If this performance penalty bothers you, use the C<:safe> function names
+instead.
+
 =head1 SEE ALSO
 
-L<perlfunc|each>
+L<perlfunc|each>, L<perlfunc|keys>, L<perlfunc|values>.
 
 =head1 AUTHOR
 
 Aaron Crane E<lt>arc@cpan.orgE<gt>
+
+Thanks to Chia-Liang Kao for his help in getting this working.
 
 =head1 COPYRIGHT
 
