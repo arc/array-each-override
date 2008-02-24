@@ -1,4 +1,8 @@
 Revision history for Perl extension Array::Each::Override
 
+0.02  Sun Feb 24 15:06:19 2008
+	- Makefile.PL now explicitly requires Perl 5.8, to prevent
+	  CPAN testers from generating uninteresting failures
+
 0.01  Sat Feb 17 12:36:18 2007
 	- original version
