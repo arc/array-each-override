@@ -10,10 +10,9 @@ use Array::Each::Override qw<each>;
 
 my %hash;
 find({no_chdir => 1, wanted => sub {
-    return if !-f;
+    return if !-f || -B;
     open my $fh, '<', $_
         or return;
-    return if -B $fh;
     while (my $line = <$fh>) {
         chomp $line;
         $hash{$line}++;
