@@ -1,5 +1,10 @@
 Revision history for Perl extension Array::Each::Override
 
+0.03  Mon Jun 30 11:42:01 2008
+	- Make test suite work on Perls with peculiar stdio; see
+	  C<"-T" and "-B" not implemented on filehandles> in perldiag
+	- No other changes
+
 0.02  Sun Feb 24 15:06:19 2008
 	- Makefile.PL now explicitly requires Perl 5.8, to prevent
 	  CPAN testers from generating uninteresting failures
