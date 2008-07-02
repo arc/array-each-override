@@ -77,8 +77,8 @@ PPCODE:
         /* SPAGAIN; */
 
         if (entry) {
-            EXTEND(SP, 2);
             SV *const key_sv = hv_iterkeysv(entry);
+            EXTEND(SP, 2);
             PUSHs(key_sv);
             if (gimme != G_ARRAY)
                XSRETURN(1);
