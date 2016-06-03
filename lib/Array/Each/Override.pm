@@ -3,7 +3,7 @@ package Array::Each::Override;
 use strict;
 use warnings;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 use XSLoader;
 XSLoader::load(__PACKAGE__, $VERSION);
