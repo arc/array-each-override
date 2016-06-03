@@ -4,15 +4,15 @@ use strict;
 use warnings;
 
 our $VERSION = '0.04';
-use base qw<DynaLoader>;
+
+use XSLoader;
+XSLoader::load(__PACKAGE__, $VERSION);
 
 use Scalar::Util qw<reftype>;
 use Carp qw<croak>;
 
 my @FUNCTIONS = qw<each keys values>;
 my %KNOWN_FUNCTION = map { ($_ => 1, "array_$_" => 1) } @FUNCTIONS;
-
-__PACKAGE__->bootstrap($VERSION);
 
 sub import {
     my ($class, @imports) = @_;
