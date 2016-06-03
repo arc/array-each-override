@@ -5,7 +5,7 @@ use warnings;
 
 use Test::More;
 
-BEGIN { require Array::Each::Override }
+use Array::Each::Override ();
 
 my @tests = (
     {
