@@ -15,6 +15,9 @@ WriteMakefile(
     PREREQ_PM     => {
         Scalar::Util => 0,
     },
+    $eumm_version < 6.3002 ? () : (
+        LICENSE => 'perl',
+    ),
     $eumm_version < 6.46 ? () : (
         META_MERGE => {
             'meta-spec' => { version => 2 },
