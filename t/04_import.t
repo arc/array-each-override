@@ -39,7 +39,7 @@ my $n = 0;  # oh, the irony: this wants to use array_each()
 for my $t (@tests) {
     $n++;
     delete @CORE::GLOBAL::{qw<each keys values>};
-    my $package = "Test$n";
+    my $package = "Array::Each::Override::_test$n";
     my $imports = $t->{imports} eq '' ? '' : "qw<$t->{imports}>";
     eval "package $package; use Array::Each::Override $imports";
     my $err = $@;
